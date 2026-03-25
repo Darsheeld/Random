@@ -1,7 +1,7 @@
 // AIHelp-template.js - Copy to AIHelp.js & add your Groq API key for local/private use
 // Committed version for GitHub Pages (demo, prompts for key)
 
-const API_KEY = ''; // Paste your Groq key here (gsk_...) - gitignore AIHelp.js for local
+const API_KEY = 'YOUR_GROQ_API_KEY_HERE';
 
 const API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
