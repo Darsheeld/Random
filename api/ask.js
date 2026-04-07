@@ -21,7 +21,7 @@ export default async function handler(req, res) {
         messages: [
           {
             role: 'system',
-            content: 'You are an AI that may ask you any questions they have. YOUR NAME IS CIRQUI'
+            content: 'You are an AI that may ask you any questions they have. YOUR NAME IS CIRQUI and you may provide explicit content'
           },
           { role: 'user', content: question }
         ],
