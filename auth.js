@@ -54,7 +54,8 @@ async function submitAuthForm(mode) {
         }
 
         if (!response.ok) {
-            showAuthMessage(result.error || 'Unable to sign in right now.');
+            const detail = result.details ? ` ${result.details}` : '';
+            showAuthMessage(`${result.error || 'Unable to sign in right now.'}${detail}`);
             return;
         }
 

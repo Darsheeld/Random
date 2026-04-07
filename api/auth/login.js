@@ -24,6 +24,6 @@ export default async function handler(req, res) {
         return res.status(200).json({ email: normalizedEmail });
     } catch (error) {
         console.error('Login error:', error);
-        return res.status(500).json({ error: 'Server error during login.' });
+        return res.status(500).json({ error: 'Server error during login.', details: error.message });
     }
 }

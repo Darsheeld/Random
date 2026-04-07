@@ -1,1 +1,6 @@
-{}
+{
+  "recover@example.com": {
+    "completedCourses": {},
+    "completedLessons": {}
+  }
+}

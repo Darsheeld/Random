@@ -20,7 +20,15 @@ async function ensureDataFile(filePath) {
 async function readJson(filePath) {
     await ensureDataFile(filePath);
     const content = await fs.readFile(filePath, 'utf8');
-    return content ? JSON.parse(content) : {};
+    if (!content) return {};
+
+    try {
+        return JSON.parse(content);
+    } catch (error) {
+        console.warn(`Corrupted JSON in ${filePath}. Replacing with empty object.`, error.message);
+        await fs.writeFile(filePath, '{}', 'utf8');
+        return {};
+    }
 }
 
 async function writeJson(filePath, data) {

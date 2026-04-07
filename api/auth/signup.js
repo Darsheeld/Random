@@ -31,6 +31,6 @@ export default async function handler(req, res) {
         return res.status(200).json({ email: normalizedEmail });
     } catch (error) {
         console.error('Signup error:', error);
-        return res.status(500).json({ error: 'Server error during signup.' });
+        return res.status(500).json({ error: 'Server error during signup.', details: error.message });
     }
 }

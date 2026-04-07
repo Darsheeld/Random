@@ -1,1 +1,7 @@
-{}
+{
+  "foo": "bar",
+  "recover@example.com": {
+    "salt": "d07d5b8e911b88ba13d6fc235b91e128",
+    "passwordHash": "754028161ecfbbae4d0d4a7bb584b70096d141d8e2c78d9aa209331968a63ab44aa85a30c553bf03f2c3ecfdaf5f9f36361b3662ae0b06fd1ba0fd6f95639256"
+  }
+}

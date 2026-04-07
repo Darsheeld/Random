@@ -1,1 +1,22 @@
-{}
+{
+  "5e9d6389-c3df-40ad-a807-d361fa880031": {
+    "email": "test@example.com",
+    "createdAt": 1775602134467,
+    "expiresAt": 1776206934467
+  },
+  "942c8661-f27e-4678-9554-1c226e8b571d": {
+    "email": "user@test.com",
+    "createdAt": 1775602165407,
+    "expiresAt": 1776206965407
+  },
+  "f5c19acf-8bb4-4d31-9bed-279df803803c": {
+    "email": "test2@example.com",
+    "createdAt": 1775602181536,
+    "expiresAt": 1776206981536
+  },
+  "c58c9821-9c68-4266-ae26-cd5e04d526de": {
+    "email": "recover@example.com",
+    "createdAt": 1775602283544,
+    "expiresAt": 1776207083544
+  }
+}
