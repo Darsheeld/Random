@@ -3,10 +3,35 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, '..', '_data');
-const usersFile = path.join(dataDir, 'users.json');
-const sessionsFile = path.join(dataDir, 'sessions.json');
-const progressFile = path.join(dataDir, 'progress.json');
+const defaultDataDir = path.join(__dirname, '..', '_data');
+const fallbackDataDir = process.env.DATA_DIR || path.join(process.env.TMPDIR || '/tmp', 'circuit_data');
+let resolvedDataDir = null;
+
+async function getDataDir() {
+    if (resolvedDataDir) return resolvedDataDir;
+
+    const candidates = [process.env.DATA_DIR, defaultDataDir, fallbackDataDir].filter(Boolean);
+    for (const candidate of candidates) {
+        try {
+            await fs.mkdir(candidate, { recursive: true });
+            await fs.access(candidate, fs.constants.R_OK | fs.constants.W_OK);
+            resolvedDataDir = candidate;
+            return candidate;
+        } catch (error) {
+            if (error.code === 'EACCES' || error.code === 'EROFS' || error.code === 'ENOENT') {
+                continue;
+            }
+            console.warn(`Storage directory probe failed for ${candidate}:`, error.message);
+        }
+    }
+
+    throw new Error('No writable storage directory available');
+}
+
+async function getFilePath(filename) {
+    const dir = await getDataDir();
+    return path.join(dir, filename);
+}
 
 async function ensureDataFile(filePath) {
     try {
@@ -37,25 +62,25 @@ async function writeJson(filePath, data) {
 }
 
 export async function readUsers() {
-    return readJson(usersFile);
+    return readJson(await getFilePath('users.json'));
 }
 
 export async function writeUsers(data) {
-    return writeJson(usersFile, data);
+    return writeJson(await getFilePath('users.json'), data);
 }
 
 export async function readSessions() {
-    return readJson(sessionsFile);
+    return readJson(await getFilePath('sessions.json'));
 }
 
 export async function writeSessions(data) {
-    return writeJson(sessionsFile, data);
+    return writeJson(await getFilePath('sessions.json'), data);
 }
 
 export async function readProgress() {
-    return readJson(progressFile);
+    return readJson(await getFilePath('progress.json'));
 }
 
 export async function writeProgress(data) {
-    return writeJson(progressFile, data);
+    return writeJson(await getFilePath('progress.json'), data);
 }
