@@ -44,7 +44,15 @@ async function submitAuthForm(mode) {
             body: JSON.stringify({ email, password })
         });
 
-        const result = await response.json();
+        let result;
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            result = await response.json();
+        } else {
+            const text = await response.text();
+            result = { error: text || 'Unexpected server response' };
+        }
+
         if (!response.ok) {
             showAuthMessage(result.error || 'Unable to sign in right now.');
             return;
