@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login or Signup - Circuit</title>
+    <link rel="stylesheet" href="courses.css">
+    <link rel="icon" href="./logo.png" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo"><img src="logo.png" alt="Circuit Logo"> Circuit</div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="circuit-simulator.html">Circuit Simulator</a></li>
+                <li><a href="tutorial.html">Tutorials</a></li>
+                <li><a href="AIHelp.html">AI Help</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contacts.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Login or Create an Account</h1>
+        <p>Keep your course progress synced across every device with a free Circuit account.</p>
+    </section>
+
+    <div class="container auth-container">
+        <div class="auth-switch">
+            <button id="login-tab" class="btn active" type="button">Login</button>
+            <button id="signup-tab" class="btn" type="button">Sign Up</button>
+        </div>
+
+        <form id="auth-form" class="auth-form">
+            <div class="form-row">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" required>
+            </div>
+            <div class="form-row">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" required minlength="6">
+            </div>
+            <button id="submit-btn" class="btn" type="submit">Login</button>
+        </form>
+
+        <div id="auth-message" class="auth-message"></div>
+        <p>When you sign up, your course and lesson completion progress is saved on our server so you can return from another device and continue where you left off.</p>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Circuit. All rights reserved.</p>
+    </footer>
+    <script src="auth.js"></script>
+    <script src="circuit.js"></script>
+</body>
+</html>

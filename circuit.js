@@ -1,4 +1,4 @@
-console.log("WEBSITE RUNNING")
+console.log("WEBSITE RUNNING");
 document.getElementById("year").textContent = new Date().getFullYear();
 
 const COURSE_STORAGE_KEY = 'circuitCompletedCourses';
@@ -7,7 +7,10 @@ const COURSE_LESSONS = {
     BasicsOfElectronics: ['FindingEq', 'OhmsLaw', 'Capacitance', 'KCL', 'KVL']
 };
 
-function getCompletedCourses() {
+let currentUser = null;
+let userProgress = null;
+
+function getLocalCompletedCourses() {
     try {
         const stored = localStorage.getItem(COURSE_STORAGE_KEY);
         return stored ? JSON.parse(stored) : {};
@@ -17,7 +20,7 @@ function getCompletedCourses() {
     }
 }
 
-function saveCompletedCourses(courses) {
+function saveLocalCompletedCourses(courses) {
     try {
         localStorage.setItem(COURSE_STORAGE_KEY, JSON.stringify(courses));
     } catch (error) {
@@ -25,7 +28,7 @@ function saveCompletedCourses(courses) {
     }
 }
 
-function getCompletedLessons() {
+function getLocalCompletedLessons() {
     try {
         const stored = localStorage.getItem(LESSON_STORAGE_KEY);
         return stored ? JSON.parse(stored) : {};
@@ -35,7 +38,7 @@ function getCompletedLessons() {
     }
 }
 
-function saveCompletedLessons(lessons) {
+function saveLocalCompletedLessons(lessons) {
     try {
         localStorage.setItem(LESSON_STORAGE_KEY, JSON.stringify(lessons));
     } catch (error) {
@@ -49,6 +52,96 @@ function getCourseForLesson(lessonId) {
 
 function getCourseLessons(courseId) {
     return COURSE_LESSONS[courseId] || [];
+}
+
+function getCompletedCourses() {
+    return userProgress ? (userProgress.completedCourses || {}) : getLocalCompletedCourses();
+}
+
+function getCompletedLessons() {
+    return userProgress ? (userProgress.completedLessons || {}) : getLocalCompletedLessons();
+}
+
+async function updateRemoteProgress(update) {
+    if (!currentUser) return;
+    try {
+        await fetch('/api/progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(update)
+        });
+    } catch (error) {
+        console.warn('Unable to sync progress to server', error);
+    }
+}
+
+async function fetchAuthState() {
+    try {
+        const response = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!response.ok) return;
+        const json = await response.json();
+        if (json.authenticated) {
+            currentUser = { email: json.email };
+        }
+    } catch (error) {
+        console.warn('Unable to fetch auth state', error);
+    }
+}
+
+async function fetchUserProgress() {
+    if (!currentUser) return;
+    try {
+        const response = await fetch('/api/progress', { credentials: 'include' });
+        if (!response.ok) return;
+        const json = await response.json();
+        userProgress = json.progress || { completedCourses: {}, completedLessons: {} };
+    } catch (error) {
+        console.warn('Unable to fetch user progress', error);
+    }
+}
+
+function renderAuthNav() {
+    const navList = document.querySelector('nav ul');
+    if (!navList) return;
+
+    const existingAuth = document.getElementById('auth-nav-item');
+    if (existingAuth) {
+        existingAuth.remove();
+    }
+    const existingLogout = document.getElementById('logout-nav-item');
+    if (existingLogout) {
+        existingLogout.remove();
+    }
+
+    const authItem = document.createElement('li');
+    authItem.id = 'auth-nav-item';
+    if (currentUser) {
+        authItem.innerHTML = `<a href="login.html">Account</a>`;
+        navList.appendChild(authItem);
+
+        const logoutItem = document.createElement('li');
+        logoutItem.id = 'logout-nav-item';
+        logoutItem.innerHTML = `<a href="#" id="logout-link">Logout</a>`;
+        navList.appendChild(logoutItem);
+
+        const logoutLink = logoutItem.querySelector('#logout-link');
+        logoutLink.addEventListener('click', async (event) => {
+            event.preventDefault();
+            try {
+                await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+            } catch (error) {
+                console.warn('Logout failed', error);
+            }
+            currentUser = null;
+            userProgress = null;
+            renderAuthNav();
+            window.location.href = 'index.html';
+        });
+    } else {
+        authItem.innerHTML = `<a href="login.html">Login / Signup</a>`;
+        navList.appendChild(authItem);
+    }
 }
 
 function updateCoursesPage() {
@@ -66,20 +159,34 @@ function updateCoursesPage() {
     });
 }
 
-function markCourseCompleted(courseId) {
+async function markCourseCompleted(courseId) {
     const current = getCompletedCourses();
     if (current[courseId]) return false;
+
     current[courseId] = true;
-    saveCompletedCourses(current);
+    saveLocalCompletedCourses(current);
+    if (currentUser) {
+        await updateRemoteProgress({ courseId });
+        if (userProgress) {
+            userProgress.completedCourses = { ...userProgress.completedCourses, [courseId]: true };
+        }
+    }
     updateCoursesPage();
     return true;
 }
 
-function markLessonCompleted(lessonId) {
+async function markLessonCompleted(lessonId) {
     const current = getCompletedLessons();
     if (current[lessonId]) return false;
+
     current[lessonId] = true;
-    saveCompletedLessons(current);
+    saveLocalCompletedLessons(current);
+    if (currentUser) {
+        await updateRemoteProgress({ lessonId });
+        if (userProgress) {
+            userProgress.completedLessons = { ...userProgress.completedLessons, [lessonId]: true };
+        }
+    }
     return true;
 }
 
@@ -90,8 +197,6 @@ function isCourseCompleteByLessons(courseId) {
 
 function showPracticeCompletionBanner(lessonId, courseComplete) {
     let banner = document.getElementById('practice-completion-banner');
-    const courseId = getCourseForLesson(lessonId);
-    const lessonLabel = lessonId ? `${lessonId} practice` : 'This practice';
     const message = courseComplete
         ? `✅ Perfect score! All lessons are complete, and the course is now marked complete.`
         : `✅ Perfect score! This lesson is complete. Finish every lesson to complete the full course.`;
@@ -118,25 +223,26 @@ function showPracticeCompletionBanner(lessonId, courseComplete) {
     banner.style.display = 'block';
 }
 
-window.tryCompleteCourseIfPerfect = function(lessonId) {
+window.tryCompleteCourseIfPerfect = async function(lessonId) {
     const problems = document.querySelectorAll('.problem');
     if (!problems.length) return false;
 
     const allCorrect = Array.from(problems).every(problem => problem.classList.contains('correct'));
     if (!allCorrect) return false;
 
-    const lessonJustCompleted = markLessonCompleted(lessonId);
+    const lessonJustCompleted = await markLessonCompleted(lessonId);
     const courseId = getCourseForLesson(lessonId);
     let courseJustCompleted = false;
     if (courseId && isCourseCompleteByLessons(courseId)) {
-        courseJustCompleted = markCourseCompleted(courseId);
+        courseJustCompleted = await markCourseCompleted(courseId);
         if (!courseJustCompleted) {
             courseJustCompleted = !!getCompletedCourses()[courseId];
         }
     }
 
-    showPracticeCompletionBanner(lessonId, courseJustCompleted);
-    return courseJustCompleted || lessonJustCompleted;
+    const courseComplete = courseJustCompleted || (courseId && isCourseCompleteByLessons(courseId));
+    showPracticeCompletionBanner(lessonId, courseComplete);
+    return courseComplete || lessonJustCompleted;
 };
 
 function createPracticeCompletionBanner(lessonId) {
@@ -156,14 +262,19 @@ function createPracticeCompletionBanner(lessonId) {
     container.insertBefore(banner, container.firstChild);
 
     const parentCourseId = getCourseForLesson(lessonId);
-    if (parentCourseId && (getCompletedCourses()[parentCourseId] || isCourseCompleteByLessons(parentCourseId))) {
+    if (parentCourseId && getCompletedCourses()[parentCourseId]) {
         banner.querySelector('.completion-panel-box p').textContent = '✅ All lessons are complete, and the course is now marked complete.';
         banner.style.display = 'block';
     }
 }
 
-function initCompletionTracking() {
+async function initCompletionTracking() {
+    await fetchAuthState();
+    renderAuthNav();
+    await fetchUserProgress();
+    renderAuthNav();
     updateCoursesPage();
+
     const courseId = document.body.dataset.courseId;
     const courseType = document.body.dataset.courseType;
     if (courseId && courseType === 'practice') {
@@ -171,4 +282,4 @@ function initCompletionTracking() {
     }
 }
 
-initCompletionTracking();
+initCompletionTracking().catch(error => console.error(error));
