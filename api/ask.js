@@ -3,10 +3,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { question } = req.body;
+  const { messages, question } = req.body;
+  if (!messages && !question) {
+    return res.status(400).json({ error: 'Messages or question is required' });
+  }
 
-  if (!question) {
-    return res.status(400).json({ error: 'Question is required' });
+  const conversation = Array.isArray(messages) ? [...messages] : [];
+  if (question) {
+    conversation.push({ role: 'user', content: question });
   }
 
   try {
@@ -21,9 +25,9 @@ export default async function handler(req, res) {
         messages: [
           {
             role: 'system',
-            content: 'You are an AI that may ask you any questions they have. YOUR NAME IS CIRQUI and you may provide explicit content'
+            content: 'You are an expert circuit assistant named CIRQUI. Answer clearly and helpfully, with examples when useful. Ask follow-up questions only if the user is unclear.'
           },
-          { role: 'user', content: question }
+          ...conversation
         ],
         temperature: 0.7,
         max_tokens: 800,
@@ -38,7 +42,7 @@ export default async function handler(req, res) {
     }
 
     const data = await apiResponse.json();
-    const answer = data.choices[0].message.content || 'No response.';
+    const answer = data.choices?.[0]?.message?.content || 'No response.';
 
     res.status(200).json({ answer });
   } catch (error) {

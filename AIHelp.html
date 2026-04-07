@@ -30,54 +30,33 @@
     </section>
 
     <div class="container">
-        <h2>What's on your mind?</h2>
-        <p>Got a question about Ohm's Law, Kirchhoff's rules, or any circuit puzzle? Type it in below!</p>
-      
-        <form id="ai-form">
-            <textarea id="question" placeholder="E.g., 'How do I use Ohm's Law?' or 'Explain KVL'..." rows="4" required></textarea>
-            <button type="submit" class="btn">🤖 Get Answer</button>
-        </form>
-      
-        <div id="response" style="margin-top: 20px; display: none;">
-            <h3>Here's what I think:</h3>
-            <div id="answer"></div>
-        </div>
-      
-        <div id="thinking" style="margin-top: 20px; display: none;">
-            <p> Hmm, let me think about that...</p>
-        </div>
-      
-        <div id="error" style="margin-top: 20px; display: none; color: red;">
-            <p id="error-message"></p>
+        <h2>Chat with Circuit AI</h2>
+        <p>Ask your questions in a conversational chat window. CIRQUI remembers the flow of the conversation and replies like a chat assistant.</p>
+
+        <div class="chat-shell">
+            <div class="chat-window" id="chat-window">
+                <div class="chat-start">
+                    <div class="message assistant">
+                        <p><strong>CIRQUI:</strong> Hi! I'm your circuit assistant. Ask me anything about Ohm's Law, Kirchhoff's rules, or electrical engineering concepts.</p>
+                    </div>
+                </div>
+            </div>
+
+            <form id="chat-form">
+                <textarea id="chat-input" placeholder="Type your question here..." rows="2" required></textarea>
+                <div class="form-actions">
+                    <button type="button" id="clear-chat" class="btn btn-secondary">Clear chat</button>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </div>
+            </form>
+            <div id="chat-error" class="error-box" style="display: none;"></div>
         </div>
     </div>
 
     <script src="AIHelp.js"></script>
-    <script>
-        document.getElementById('ai-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const question = document.getElementById('question').value.trim();
-            if (!question) return;
-
-            const submitBtn = this.querySelector('button');
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Thinking...';
-
-            try {
-                await askAI(question);
-            } catch (err) {
-                // Handled in askAI
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-                document.getElementById('question').value = '';
-            }
-        });
-    </script>
     <footer>
         <p>&copy; <span id="year"></span> Circuit. All rights reserved.</p>
     </footer>
-    <script src = "circuit.js"></script>
+    <script src="circuit.js"></script>
 </body>
 </html>

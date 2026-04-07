@@ -1,53 +1,110 @@
 // AI Help JavaScript - Backend proxy integration for electronics tutoring
-// Calls local /api/ask endpoint which securely uses Groq API with server-side credentials
+// Uses local /api/ask endpoint with chat-style messages and a conversation history.
 
-async function askAI(question) {
-    const thinkingEl = document.getElementById('thinking');
-    const responseEl = document.getElementById('response');
-    const answerEl = document.getElementById('answer');
-    const errorEl = document.getElementById('error');
-    const errorMsgEl = document.getElementById('error-message');
+const chatWindow = document.getElementById('chat-window');
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('chat-input');
+const chatError = document.getElementById('chat-error');
+const clearChatBtn = document.getElementById('clear-chat');
 
-    thinkingEl.style.display = 'block';
-    responseEl.style.display = 'none';
-    errorEl.style.display = 'none';
+let conversation = [];
+let isLoading = false;
+
+function appendMessage(role, content) {
+    const messageEl = document.createElement('div');
+    messageEl.className = `message ${role}`;
+    const label = role === 'user' ? 'You' : 'CIRQUI';
+    messageEl.innerHTML = `<p><strong>${label}:</strong> ${formatMessage(content)}</p>`;
+    chatWindow.appendChild(messageEl);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function formatMessage(text) {
+    const html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>');
+    return html;
+}
+
+function setLoading(state) {
+    isLoading = state;
+    const button = chatForm.querySelector('button[type="submit"]');
+    button.disabled = state;
+    button.textContent = state ? 'Thinking...' : 'Send';
+}
+
+function showError(message) {
+    chatError.textContent = message;
+    chatError.style.display = 'block';
+}
+
+function hideError() {
+    chatError.style.display = 'none';
+    chatError.textContent = '';
+}
+
+async function askAI(messages) {
+    const response = await fetch('/api/ask', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages })
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        console.error('Full API Error:', errText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}. Check console for details.`);
+    }
+
+    const data = await response.json();
+    return data.answer || 'No response.';
+}
+
+chatForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (isLoading) return;
+
+    const userText = chatInput.value.trim();
+    if (!userText) return;
+
+    hideError();
+    chatInput.value = '';
+    appendMessage('user', userText);
+    conversation.push({ role: 'user', content: userText });
+    setLoading(true);
 
     try {
-        const apiResponse = await fetch('/api/ask', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                question: question
-            })
-        });
-
-        if (!apiResponse.ok) {
-            const errText = await apiResponse.text();
-            console.error('Full API Error:', errText);
-            throw new Error(`HTTP ${apiResponse.status}: ${apiResponse.statusText}. See console for details.`);
-        }
-
-        const data = await apiResponse.json();
-        const answer = data.answer || 'No response.';
-
-        // Simple Markdown to HTML
-        let formatted = answer
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/^\\*\\*\\*(.*?)\\*\\*\\*/gm, '<h3>$1</h3>')
-            .replace(/^-\\s+(.*)$/gm, '<li>$1</li>')
-            .replace(/(<li>.*<\/li>)/g, '<ul>$&</ul>');
-
-        answerEl.innerHTML = formatted;
-        responseEl.style.display = 'block';
-
+        const assistantText = await askAI(conversation);
+        appendMessage('assistant', assistantText);
+        conversation.push({ role: 'assistant', content: assistantText });
     } catch (error) {
         console.error('AI Error:', error);
-        errorMsgEl.textContent = error.message + ' (Check console F12). Local dev should work.';
-        errorEl.style.display = 'block';
+        showError(error.message + ' (See console.)');
+        appendMessage('assistant', 'Sorry, I could not get a response. Please try again.');
     } finally {
-        thinkingEl.style.display = 'none';
+        setLoading(false);
     }
-}
+});
+
+clearChatBtn.addEventListener('click', () => {
+    conversation = [];
+    chatWindow.innerHTML = `
+        <div class="chat-start">
+            <div class="message assistant">
+                <p><strong>CIRQUI:</strong> Hi! I'm your circuit assistant. Ask me anything about Ohm's Law, Kirchhoff's rules, or electrical engineering concepts.</p>
+            </div>
+        </div>`;
+    hideError();
+    chatInput.focus();
+});
+
+chatInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        chatForm.requestSubmit();
+    }
+});
