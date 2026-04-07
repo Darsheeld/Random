@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="OhmsLawCourse.css">
     <link rel="icon" href="./logo.png" type="text/x-icon">
 </head>
-<body>
+<body data-course-id="Capacitance" data-course-type="practice">
     <header>
         <nav>
             <div class="logo"><img src="logo.png" alt="Circuit Logo"> Circuit</div>
@@ -259,12 +259,17 @@
                     if (selectedOption.value === correctAnswer) {
                         feedback.textContent = '✓ Correct!';
                         feedback.style.color = '#28a745';
+                        problem.classList.add('correct');
                     } else {
                         feedback.textContent = '✗ Incorrect. Try again.';
                         feedback.style.color = '#ff6b6b';
+                        problem.classList.remove('correct');
                     }
 
                     feedback.style.display = 'block';
+                    if (window.tryCompleteCourseIfPerfect) {
+                        window.tryCompleteCourseIfPerfect('Capacitance');
+                    }
                 });
             });
         });

@@ -36,51 +36,73 @@ function updateCoursesPage() {
     });
 }
 
-function createCompletionWidget(courseId) {
+function markCourseCompleted(courseId) {
+    const current = getCompletedCourses();
+    if (current[courseId]) return false;
+    current[courseId] = true;
+    saveCompletedCourses(current);
+    updateCoursesPage();
+    return true;
+}
+
+function showPracticeCompletionBanner(courseId) {
+    let banner = document.getElementById('practice-completion-banner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'practice-completion-banner';
+        banner.className = 'completion-panel';
+        banner.innerHTML = `
+            <div class="completion-panel-box">
+                <p>✅ Perfect score! This course is now marked complete and will show a check mark on the Courses page.</p>
+            </div>
+        `;
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(banner, container.firstChild);
+        }
+    }
+    banner.style.display = 'block';
+}
+
+window.tryCompleteCourseIfPerfect = function(courseId) {
+    const problems = document.querySelectorAll('.problem');
+    if (!problems.length) return false;
+
+    const allCorrect = Array.from(problems).every(problem => problem.classList.contains('correct'));
+    if (!allCorrect) return false;
+
+    const justCompleted = markCourseCompleted(courseId);
+    showPracticeCompletionBanner(courseId);
+    return justCompleted;
+};
+
+function createPracticeCompletionBanner(courseId) {
     const container = document.querySelector('.container');
     if (!container) return;
 
-    const completed = getCompletedCourses();
-    const isComplete = !!completed[courseId];
-
-    const widget = document.createElement('div');
-    widget.className = 'completion-panel';
-    widget.innerHTML = `
+    const banner = document.createElement('div');
+    banner.id = 'practice-completion-banner';
+    banner.className = 'completion-panel';
+    banner.style.display = 'none';
+    banner.innerHTML = `
         <div class="completion-panel-box">
-            <p><strong>${isComplete ? 'Lesson complete!' : 'Finish this lesson'}</strong></p>
-            <p>${isComplete ? 'This lesson is already marked complete. The Courses page will show a check mark.' : 'Mark this lesson complete so you can track progress on the Courses page.'}</p>
-            <button id="complete-course-btn" class="btn ${isComplete ? 'btn-secondary' : 'btn'}" type="button">
-                ${isComplete ? '✓ Completed' : 'Mark lesson complete'}
-            </button>
+            <p>✅ Perfect score! This course is now marked complete and will show a check mark on the Courses page.</p>
         </div>
     `;
 
-    container.appendChild(widget);
+    container.insertBefore(banner, container.firstChild);
 
-    const button = document.getElementById('complete-course-btn');
-    if (!button) return;
-
-    button.addEventListener('click', () => {
-        const current = getCompletedCourses();
-        if (current[courseId]) return;
-        current[courseId] = true;
-        saveCompletedCourses(current);
-        updateCoursesPage();
-        button.textContent = '✓ Completed';
-        button.classList.remove('btn');
-        button.classList.add('btn-secondary');
-        const message = widget.querySelector('p');
-        if (message) {
-            message.textContent = 'This lesson is now marked complete. Return to the Courses page to see the check mark.';
-        }
-    });
+    if (getCompletedCourses()[courseId]) {
+        banner.style.display = 'block';
+    }
 }
 
 function initCompletionTracking() {
     updateCoursesPage();
     const courseId = document.body.dataset.courseId;
-    if (courseId) {
-        createCompletionWidget(courseId);
+    const courseType = document.body.dataset.courseType;
+    if (courseId && courseType === 'practice') {
+        createPracticeCompletionBanner(courseId);
     }
 }
 
