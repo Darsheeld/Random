@@ -24,6 +24,44 @@ function showAuthMessage(text, type = 'error') {
     message.classList.toggle('success', type === 'success');
 }
 
+function getLocalAccounts() {
+    try {
+        return JSON.parse(localStorage.getItem('circuitLocalAccounts') || '{}');
+    } catch {
+        return {};
+    }
+}
+
+function saveLocalAccounts(accounts) {
+    try {
+        localStorage.setItem('circuitLocalAccounts', JSON.stringify(accounts));
+    } catch (error) {
+        console.warn('Unable to save local accounts', error);
+    }
+}
+
+async function computeHash(value) {
+    if (!window.crypto || !window.crypto.subtle) {
+        return value;
+    }
+    const data = new TextEncoder().encode(value);
+    const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function saveLocalAccount(email, password) {
+    const accounts = getLocalAccounts();
+    accounts[email.toLowerCase()] = await computeHash(password);
+    saveLocalAccounts(accounts);
+}
+
+async function verifyLocalAccount(email, password) {
+    const accounts = getLocalAccounts();
+    const storedHash = accounts[email.toLowerCase()];
+    if (!storedHash) return false;
+    return storedHash === await computeHash(password);
+}
+
 async function submitAuthForm(mode) {
     const emailField = selectElement('email');
     const passwordField = selectElement('password');
@@ -55,13 +93,43 @@ async function submitAuthForm(mode) {
 
         if (!response.ok) {
             const detail = result.details ? ` ${result.details}` : '';
+            if (mode === 'signup' && response.status >= 500) {
+                await saveLocalAccount(email, password);
+                showAuthMessage('Account created locally because the server storage is unavailable. You can log in on this device.', 'success');
+                window.location.href = 'courses.html';
+                return;
+            }
+            if (mode === 'login' && response.status === 401) {
+                const localOk = await verifyLocalAccount(email, password);
+                if (localOk) {
+                    showAuthMessage('Logged in locally because the server can’t find your account right now.', 'success');
+                    window.location.href = 'courses.html';
+                    return;
+                }
+            }
             showAuthMessage(`${result.error || 'Unable to sign in right now.'}${detail}`);
             return;
+        }
+
+        if (mode === 'signup') {
+            await saveLocalAccount(email, password);
         }
 
         showAuthMessage('Success! Redirecting to Courses...', 'success');
         window.location.href = 'courses.html';
     } catch (error) {
+        const localOk = mode === 'login' ? await verifyLocalAccount(email, password) : false;
+        if (localOk) {
+            showAuthMessage('Logged in locally because the server is unavailable.', 'success');
+            window.location.href = 'courses.html';
+            return;
+        }
+        if (mode === 'signup') {
+            await saveLocalAccount(email, password);
+            showAuthMessage('Account created locally because the server is unavailable. You can log in on this device.', 'success');
+            window.location.href = 'courses.html';
+            return;
+        }
         showAuthMessage(error && error.message ? `Network error: ${error.message}` : 'Network error. Please try again.');
         console.error(error);
     }

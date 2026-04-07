@@ -3,5 +3,9 @@
   "recover@example.com": {
     "salt": "d07d5b8e911b88ba13d6fc235b91e128",
     "passwordHash": "754028161ecfbbae4d0d4a7bb584b70096d141d8e2c78d9aa209331968a63ab44aa85a30c553bf03f2c3ecfdaf5f9f36361b3662ae0b06fd1ba0fd6f95639256"
+  },
+  "demo@example.com": {
+    "salt": "5c0709d1550a63ae35b7570db59d9a68",
+    "passwordHash": "5717704c19dcecf2d48b4be439ce218ca9fc8e5c9f0e4f27bb0a43a7076d8ca392985f6a3d9626050ef8a537e9514e8d94f2fcc18129f40d873646c40457274d"
   }
 }

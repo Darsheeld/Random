@@ -2,5 +2,9 @@
   "recover@example.com": {
     "completedCourses": {},
     "completedLessons": {}
+  },
+  "demo@example.com": {
+    "completedCourses": {},
+    "completedLessons": {}
   }
 }
