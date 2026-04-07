@@ -1,6 +1,7 @@
 {
   "name": "random-electronics-site",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'No build step required'",

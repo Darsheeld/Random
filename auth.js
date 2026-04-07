@@ -53,7 +53,7 @@ async function submitAuthForm(mode) {
         showAuthMessage('Success! Redirecting to Courses...', 'success');
         window.location.href = 'courses.html';
     } catch (error) {
-        showAuthMessage('Network error. Please try again.');
+        showAuthMessage(error && error.message ? `Network error: ${error.message}` : 'Network error. Please try again.');
         console.error(error);
     }
 }
