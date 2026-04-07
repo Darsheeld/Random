@@ -164,6 +164,23 @@ nav a:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.course-card.completed {
+    border-color: #34d399;
+    box-shadow: 0 10px 20px rgba(52, 211, 153, 0.18);
+}
+
+.course-card.completed h3 {
+    color: #10b981;
+}
+
+.course-card.completed h3::after {
+    content: ' ✓ Completed';
+    color: #10b981;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-left: 0.4rem;
+}
+
 .course-card h3 {
     color: #ff6b6b;
     margin-bottom: 1rem;
@@ -179,4 +196,25 @@ footer {
     text-align: center;
     padding: 2rem;
     margin-top: 4rem;
+}
+
+.completion-panel {
+    margin-top: 2rem;
+}
+
+.completion-panel-box {
+    background: #f0fdf4;
+    border: 1px solid #d1fae5;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.completion-panel-box p {
+    margin-bottom: 1rem;
+    color: #064e3b;
+}
+
+.completion-panel-box button {
+    min-width: 190px;
 }

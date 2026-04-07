@@ -139,10 +139,48 @@ nav a:hover {
     box-shadow: 0 2px 10px rgba(255, 107, 107, 0.4);
 }
 
+.btn-secondary {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    background: #f8fafc;
+    color: #111827;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 2px solid #cbd5e1;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    border-color: #94a3b8;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+}
+
+.completion-panel {
+    margin-top: 2rem;
+}
+
+.completion-panel-box {
+    background: #f0fdf4;
+    border: 1px solid #d1fae5;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.completion-panel-box p {
+    margin-bottom: 1rem;
+    color: #064e3b;
 }
 
 .courses {
