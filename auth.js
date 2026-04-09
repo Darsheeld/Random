@@ -129,14 +129,20 @@ async function submitAuthForm(mode) {
     } catch (error) {
         const localOk = mode === 'login' ? await verifyLocalAccount(email, password) : false;
         if (localOk) {
-            showAuthMessage('Logged in locally because the server is unavailable.', 'success');
-            window.location.href = 'courses.html';
+            currentUser = { email };
+            localStorage.setItem('loggedInUser', email);
+            window.renderAuthNav();
+            showAuthMessage('Logged in locally because the server is unavailable. Redirecting to Courses...', 'success');
+            setTimeout(() => window.location.href = 'courses.html', 1500);
             return;
         }
         if (mode === 'signup') {
             await saveLocalAccount(email, password);
-            showAuthMessage('Account created locally because the server is unavailable. You can log in on this device.', 'success');
-            window.location.href = 'courses.html';
+            currentUser = { email };
+            localStorage.setItem('loggedInUser', email);
+            window.renderAuthNav();
+            showAuthMessage('Account created locally because the server is unavailable. Redirecting to Courses...', 'success');
+            setTimeout(() => window.location.href = 'courses.html', 1500);
             return;
         }
         showAuthMessage(error && error.message ? `Network error: ${error.message}` : 'Network error. Please try again.');
