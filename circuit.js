@@ -79,13 +79,21 @@ async function updateRemoteProgress(update) {
 async function fetchAuthState() {
     try {
         const response = await fetch('/api/auth/me', { credentials: 'include' });
-        if (!response.ok) return;
+        if (!response.ok) throw new Error();
         const json = await response.json();
         if (json.authenticated) {
             currentUser = { email: json.email };
+            localStorage.setItem('loggedInUser', json.email);
+        } else {
+            localStorage.removeItem('loggedInUser');
         }
     } catch (error) {
         console.warn('Unable to fetch auth state', error);
+        // Check local storage for local login
+        const loggedIn = localStorage.getItem('loggedInUser');
+        if (loggedIn) {
+            currentUser = { email: loggedIn };
+        }
     }
 }
 
@@ -142,6 +150,7 @@ function renderAuthNav() {
             }
             currentUser = null;
             userProgress = null;
+            localStorage.removeItem('loggedInUser');
             renderAuthNav();
             window.location.href = 'index.html';
         });

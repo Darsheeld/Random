@@ -96,6 +96,7 @@ async function submitAuthForm(mode) {
             if (mode === 'signup' && response.status >= 500) {
                 await saveLocalAccount(email, password);
                 currentUser = { email };
+                localStorage.setItem('loggedInUser', email);
                 window.renderAuthNav();
                 showAuthMessage('Account created locally because the server storage is unavailable. Redirecting to Courses...', 'success');
                 setTimeout(() => window.location.href = 'courses.html', 1500);
@@ -105,6 +106,7 @@ async function submitAuthForm(mode) {
                 const localOk = await verifyLocalAccount(email, password);
                 if (localOk) {
                     currentUser = { email };
+                    localStorage.setItem('loggedInUser', email);
                     window.renderAuthNav();
                     showAuthMessage('Logged in locally because the server can\'t find your account right now. Redirecting to Courses...', 'success');
                     setTimeout(() => window.location.href = 'courses.html', 1500);
@@ -120,6 +122,7 @@ async function submitAuthForm(mode) {
         }
 
         currentUser = { email: result.email };
+        localStorage.setItem('loggedInUser', result.email);
         window.renderAuthNav();
         showAuthMessage('Success! You are now logged in. Redirecting to Courses...', 'success');
         setTimeout(() => window.location.href = 'courses.html', 1500);
