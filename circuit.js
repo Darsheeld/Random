@@ -151,6 +151,8 @@ function renderAuthNav() {
     }
 }
 
+window.renderAuthNav = renderAuthNav;
+
 function updateCoursesPage() {
     const cards = document.querySelectorAll('.course-card[data-course-id]');
     if (!cards.length) return;

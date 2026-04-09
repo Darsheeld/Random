@@ -95,15 +95,19 @@ async function submitAuthForm(mode) {
             const detail = result.details ? ` ${result.details}` : '';
             if (mode === 'signup' && response.status >= 500) {
                 await saveLocalAccount(email, password);
-                showAuthMessage('Account created locally because the server storage is unavailable. You can log in on this device.', 'success');
-                window.location.href = 'courses.html';
+                currentUser = { email };
+                window.renderAuthNav();
+                showAuthMessage('Account created locally because the server storage is unavailable. Redirecting to Courses...', 'success');
+                setTimeout(() => window.location.href = 'courses.html', 1500);
                 return;
             }
             if (mode === 'login' && response.status === 401) {
                 const localOk = await verifyLocalAccount(email, password);
                 if (localOk) {
-                    showAuthMessage('Logged in locally because the server can’t find your account right now.', 'success');
-                    window.location.href = 'courses.html';
+                    currentUser = { email };
+                    window.renderAuthNav();
+                    showAuthMessage('Logged in locally because the server can\'t find your account right now. Redirecting to Courses...', 'success');
+                    setTimeout(() => window.location.href = 'courses.html', 1500);
                     return;
                 }
             }
@@ -115,8 +119,10 @@ async function submitAuthForm(mode) {
             await saveLocalAccount(email, password);
         }
 
-        showAuthMessage('Success! Redirecting to Courses...', 'success');
-        window.location.href = 'courses.html';
+        currentUser = { email: result.email };
+        window.renderAuthNav();
+        showAuthMessage('Success! You are now logged in. Redirecting to Courses...', 'success');
+        setTimeout(() => window.location.href = 'courses.html', 1500);
     } catch (error) {
         const localOk = mode === 'login' ? await verifyLocalAccount(email, password) : false;
         if (localOk) {

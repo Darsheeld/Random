@@ -78,6 +78,31 @@ nav a:hover {
     opacity: 0.8;
 }
 
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    cursor: default;
+}
+
+.profile-pic {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #ff6b6b;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.user-name {
+    font-size: 1rem;
+}
+
 .hero {
     background: linear-gradient(135deg, #667eea 0%, #ff6b6b 100%);
     color: white;
