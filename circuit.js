@@ -117,7 +117,14 @@ function renderAuthNav() {
     const authItem = document.createElement('li');
     authItem.id = 'auth-nav-item';
     if (currentUser) {
-        authItem.innerHTML = `<a href="login.html">Account</a>`;
+        const displayName = currentUser.email.split('@')[0];
+        const initial = currentUser.email.charAt(0).toUpperCase();
+        authItem.innerHTML = `
+            <div class="user-profile">
+                <div class="profile-pic">${initial}</div>
+                <span class="user-name">${displayName}</span>
+            </div>
+        `;
         navList.appendChild(authItem);
 
         const logoutItem = document.createElement('li');
